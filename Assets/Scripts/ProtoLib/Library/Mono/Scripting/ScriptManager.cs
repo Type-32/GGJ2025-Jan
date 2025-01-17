@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace ProtoLib.Library.Mono.Scripting
 {
-    public class ScriptManager<T> : MonoBehaviour
+    public class ScriptManager<T> : MonoBehaviour where T : IScriptComponent
     {
         [Header("Manager Settings")]
         [SerializeField] protected bool collectComponentsOnAwake = true;
