@@ -134,7 +134,8 @@ GameObject:
   - component: {fileID: 2094731}
   - component: {fileID: 2094730}
   - component: {fileID: 2094736}
-  m_Layer: 0
+  - component: {fileID: 2094737}
+  m_Layer: 6
   m_Name: Character
   m_TagString: Untagged
   m_Icon: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000, type: 0}
@@ -173,6 +174,11 @@ MonoBehaviour:
   grapplePullDistance: 0.13
   dashForce: 5
   maxPullSpeed: 7
+  grappleableLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  hookPrefab: {fileID: 2763228773198126150, guid: 518314447cd394c059c88a60f09259a3, type: 3}
+  hookSpeed: 20
   lineRenderer: {fileID: 1553356064}
   grappleTextures:
   - {fileID: 10305, guid: 0000000000000000f000000000000000, type: 0}
@@ -323,6 +329,22 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &2094737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2094729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbfb0174be594639b5f07b1944eb7c05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  collectManagerOnAwake: 1
+  shields: 0
+  wasteShieldShakeData: {fileID: 11400000, guid: 7fde1c05272b14326bf84e9709c1282a, type: 2}
+  grappleSuccessShakeData: {fileID: 11400000, guid: 1adb0628eb7f14f7a9ca51fcab9f87b7, type: 2}
 --- !u!1 &115965250
 GameObject:
   m_ObjectHideFlags: 0
@@ -421,7 +443,7 @@ GameObject:
   - component: {fileID: 262921975}
   - component: {fileID: 262921974}
   - component: {fileID: 262921976}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -588,6 +610,7 @@ GameObject:
   - component: {fileID: 519420029}
   - component: {fileID: 519420030}
   - component: {fileID: 519420033}
+  - component: {fileID: 519420034}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -745,6 +768,23 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   CustomBlends: {fileID: 0}
+--- !u!114 &519420034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ab8353b5ebd32545867da143199a814, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _shakeTechnique: 0
+  _makeDefaultOnEnable: 1
+  _limitMagnitude: 0
+  _positionalMagnitudeLimit: 10
+  _rotationalMagnitudeLimit: 3
 --- !u!1 &567526950
 GameObject:
   m_ObjectHideFlags: 0
@@ -1245,7 +1285,7 @@ GameObject:
   - component: {fileID: 1109047669}
   - component: {fileID: 1109047668}
   - component: {fileID: 1109047667}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Square (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1690,7 +1730,7 @@ GameObject:
   - component: {fileID: 1683812686}
   - component: {fileID: 1683812685}
   - component: {fileID: 1683812684}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Square (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1900,6 +1940,56 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1884231370
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1884231373}
+  - component: {fileID: 1884231372}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1884231372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884231370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 886bc2a625c74f93a20705b2a59337c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  audioClips:
+  - name: HookHit
+    clip: {fileID: 8300000, guid: 381856a8cf814e4997e1f41bd5f7994c, type: 3}
+  audioMixer: {fileID: 24100000, guid: 5dd4749677fea40a29590cea63845b6b, type: 2}
+  sfxMixerGroup: {fileID: 1927026998155225523, guid: 5dd4749677fea40a29590cea63845b6b, type: 2}
+  musicMixerGroup: {fileID: 1382820640158537521, guid: 5dd4749677fea40a29590cea63845b6b, type: 2}
+--- !u!4 &1884231373
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884231370}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1904114778
 GameObject:
   m_ObjectHideFlags: 0
@@ -2199,7 +2289,7 @@ GameObject:
   - component: {fileID: 2114482974}
   - component: {fileID: 2114482973}
   - component: {fileID: 2114482972}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Square (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2333,7 +2423,7 @@ GameObject:
   - component: {fileID: 2129487767}
   - component: {fileID: 2129487766}
   - component: {fileID: 2129487765}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Square (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2469,3 +2559,4 @@ SceneRoots:
   - {fileID: 1928658761}
   - {fileID: 619394802}
   - {fileID: 1639994102}
+  - {fileID: 1884231373}

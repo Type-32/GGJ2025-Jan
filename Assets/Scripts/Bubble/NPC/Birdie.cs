@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Bubble.NPC
 {
@@ -7,6 +9,7 @@ namespace Bubble.NPC
         [NaughtyAttributes.MinMaxSlider(0.01f, 10f)]
         public Vector2 speedRange; // Speed of the NPC
         public float spawnOffset = 2f; // Offset to spawn outside the viewport
+        public bool StopMoving = false;
 
         private Vector2 targetPosition; // Target position to fly towards
         private bool movingRight; // Direction of movement
@@ -34,10 +37,11 @@ namespace Bubble.NPC
         void FixedUpdate()
         {
             // Move the NPC towards the target position using Rigidbody2D
-            rb.MovePosition(Vector2.MoveTowards(rb.position, targetPosition, speed * Time.fixedDeltaTime));
+            if(!StopMoving)
+                rb.MovePosition(Vector2.MoveTowards(rb.position, targetPosition, speed * Time.fixedDeltaTime));
 
             // Destroy the NPC if it reaches the target position
-            if (rb.position == targetPosition)
+            if (rb.position == targetPosition || transform.position.y < -30)
             {
                 Destroy(gameObject);
             }
@@ -77,6 +81,20 @@ namespace Bubble.NPC
             else
             {
                 targetPosition = new Vector2(viewportMin.x - spawnOffset, rb.position.y);
+            }
+        }
+
+        private void OnCollisionEnter2D(Collision2D other)
+        {
+            if(other.gameObject.layer == LayerMask.NameToLayer("Game/Hook") || other.gameObject.layer == LayerMask.NameToLayer("Game/Character"))
+            {
+                StopMoving = true;
+                Collider2D c = this.GetComponent<Collider2D>();
+                c.enabled = false;
+                rb.gravityScale = 1;
+                // add random angular rotation
+                rb.angularVelocity = Random.Range(-360f, 360f);
+                rb.linearVelocity = Vector2.zero;
             }
         }
     }
