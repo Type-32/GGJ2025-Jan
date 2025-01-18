@@ -26,6 +26,7 @@ namespace Bubble.Character
         public void AddShield()
         {
             shields++;
+            AudioManager.Instance.PlayAudio("GainShield");
         }
 
         protected void Start()
@@ -45,6 +46,7 @@ namespace Bubble.Character
                     dashEffect.Play();
                 if (dashShakeData != null)
                     CameraShakerHandler.Shake(dashShakeData);
+                AudioManager.Instance.PlayAudio("Dash");
             });
         }
 
@@ -68,9 +70,11 @@ namespace Bubble.Character
                 Collider2D collider = GetComponent<Collider2D>();
                 collider.enabled = false;
                 rb.bodyType = RigidbodyType2D.Static;
+                AudioManager.Instance.PlayAudio("BubbleDeath");
             }
             else
             {
+                AudioManager.Instance.PlayAudio("DecreaseShield");
                 shields -= 1;
                 if (wasteShieldShakeData != null)
                     CameraShakerHandler.Shake(wasteShieldShakeData);
@@ -80,6 +84,7 @@ namespace Bubble.Character
         protected void FixedUpdate()
         {
             shield.gameObject.SetActive(shields > 0);
+            manager.CharAPI.Get<Action<int>>("attributeShields").Invoke(shields);
         }
     }
 }

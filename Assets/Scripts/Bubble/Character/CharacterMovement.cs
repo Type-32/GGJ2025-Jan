@@ -21,6 +21,7 @@ namespace Bubble.Character
         private bool isGrappling = false;
         private bool isShootingHook = false;
         private SpringJoint2D springJoint;
+        [SerializeField] private float dashCooldown = 3f;
 
         [Header("Grapple Settings")]
         public float springFrequency = 1f; // Controls the speed of the pull
@@ -45,12 +46,15 @@ namespace Bubble.Character
         public float textureScrollSpeed = 1f; // Speed at which the texture scrolls along the line
         
         private CharacterInteractions _inter;
+        private float cooling = 0f;
 
         private Quaternion _targetRotation = Quaternion.identity;
         private bool _stopInterpolating = false;
+        private CharacterManager manager;
         
         private void Start()
         {
+            manager = GetComponent<CharacterManager>();
             _inter = this.ScriptManager.GetScriptComponent<CharacterInteractions>();
             _inter.API.Get<Action>("onShootGrapple").Subscribe(TryShootHook);
             _inter.API.Get<Action>("onReleaseGrapple").Subscribe(ReleaseGrapple);
@@ -166,6 +170,8 @@ namespace Bubble.Character
 
         public void OnDash()
         {
+            if (cooling / dashCooldown < 1f) return;
+            
             rigidbody.linearVelocity = Vector2.zero;
             Vector2 direction = (GetMousePosition() - rigidbody.position).normalized;
 
@@ -213,6 +219,16 @@ namespace Bubble.Character
             }
             
             transform.rotation = Quaternion.Lerp(transform.rotation, _targetRotation, Time.deltaTime * 5);
+        }
+
+        private void FixedUpdate()
+        {
+            do
+            {
+                cooling = Math.Clamp(cooling + Time.fixedTime, 0, dashCooldown);
+            }while(cooling < dashCooldown);
+
+            manager.CharAPI.Get<Action<float>>("attributeDashCooldownProgress").Invoke(cooling / dashCooldown);
         }
 
         private void OnHookNullify()

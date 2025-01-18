@@ -130,28 +130,6 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BH UI_0
-      rect:
-        serializedVersion: 2
-        x: 15
-        y: 111
-        width: 50
-        height: 18
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ae34451de87b77320800000000000000
-      internalID: 2555713137581245418
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: BH UI_1
       rect:
         serializedVersion: 2
@@ -174,28 +152,6 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: BH UI_2
-      rect:
-        serializedVersion: 2
-        x: 15
-        y: 79
-        width: 50
-        height: 18
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d1d1fd32812958bf0800000000000000
-      internalID: -322691165908427491
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: BH UI_4
       rect:
         serializedVersion: 2
@@ -213,28 +169,6 @@ TextureImporter:
       bones: []
       spriteID: ea85e38d3f6f721a0800000000000000
       internalID: -6834222382345987922
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BH UI_5
-      rect:
-        serializedVersion: 2
-        x: 15
-        y: 47
-        width: 50
-        height: 18
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f5632a8f96d22e0e0800000000000000
-      internalID: -2242179731310889377
       vertices: []
       indices: 
       edges: []
@@ -279,6 +213,72 @@ TextureImporter:
       bones: []
       spriteID: 4109978b9367455c0800000000000000
       internalID: -4227624159913865196
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BH UI_0
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 112
+        width: 48
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8eb53bccf4f554cbdb0fbde081038b06
+      internalID: 2555713137581245418
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BH UI_2
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 80
+        width: 48
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 70e7f4a1335ae467d89661f2d3b3e9ee
+      internalID: -322691165908427491
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BH UI_3
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 48
+        width: 48
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b07f2cdb7439641af8236ed7d24393bf
+      internalID: -3182871660338104577
       vertices: []
       indices: 
       edges: []

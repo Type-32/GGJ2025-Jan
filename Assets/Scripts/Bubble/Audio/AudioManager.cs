@@ -60,6 +60,7 @@ namespace Bubble.Audio
             {
                 // Create a temporary GameObject to hold the AudioSource
                 GameObject tempAudioObject = new GameObject("TempAudio");
+                // tempAudioObject.transform.position = Camera.main.transform.position;
                 AudioSource audioSource = tempAudioObject.AddComponent<AudioSource>();
 
                 // Configure the AudioSource
@@ -78,7 +79,7 @@ namespace Bubble.Audio
                 audioSource.Play();
 
                 // Destroy the object after the clip finishes playing
-                Destroy(tempAudioObject, clip.length);
+                Destroy(tempAudioObject, clip.length + 1);
             }
             else
             {

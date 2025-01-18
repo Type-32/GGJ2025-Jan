@@ -11,6 +11,7 @@ namespace Bubble.Character
         public FacetAPI CharAPI { get; set; } = FacetAPI.Create()
             .Realtime<Action<int>>("attributeShields")
             .Callback<Action>("onDeath")
+            .Realtime<Action<float>>("attributeDashCooldownProgress")
             .Build();
     }
 }
