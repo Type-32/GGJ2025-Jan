@@ -50,6 +50,7 @@ namespace Bubble.Character
 
         private Quaternion _targetRotation = Quaternion.identity;
         private bool _stopInterpolating = false;
+        private bool _stopCooling = false;
         private CharacterManager manager;
         
         private void Start()
@@ -172,6 +173,12 @@ namespace Bubble.Character
         {
             if (cooling / dashCooldown < 1f) return;
             
+            _stopCooling = true;
+            cooling = 0f;
+            _stopCooling = false;
+            
+            Debug.Log("On Dash");
+            
             rigidbody.linearVelocity = Vector2.zero;
             Vector2 direction = (GetMousePosition() - rigidbody.position).normalized;
 
@@ -184,7 +191,6 @@ namespace Bubble.Character
             
             SetInterpolatingRotation(FacingTowardsRotation(transform.position, GetMousePosition()));
             RelayAPI.Get<Action>("onPlayerDashed").Invoke();
-            cooling = 0;
         }
         
         private void UpdateLineRenderer()
@@ -224,12 +230,12 @@ namespace Bubble.Character
 
         private void FixedUpdate()
         {
-            do
-            {
-                cooling = Math.Clamp(cooling + Time.fixedTime, 0, dashCooldown);
-            }while(cooling < dashCooldown);
+            if(!_stopCooling)
+                cooling = Math.Clamp(cooling + Time.fixedDeltaTime, 0, dashCooldown);
 
+            
             manager.CharAPI.Get<Action<float>>("attributeDashCooldownProgress").Invoke(cooling / dashCooldown);
+            // Debug.Log(cooling);
         }
 
         private void OnHookNullify()
