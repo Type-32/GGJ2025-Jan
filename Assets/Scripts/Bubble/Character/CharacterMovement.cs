@@ -109,7 +109,7 @@ namespace Bubble.Character
 
             // Apply a force proportional to the distance
             float forceMagnitude = Mathf.Clamp(distance * dashForce, 0, maxPullSpeed);
-            rigidbody.AddForce(direction * forceMagnitude, ForceMode2D.Force);
+            rigidbody.AddForce(direction * forceMagnitude, ForceMode2D.Impulse);
         }
         
         private void UpdateLineRenderer()

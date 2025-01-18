@@ -15,7 +15,10 @@ namespace Bubble.Parallax
                 parallaxCamera = Camera.main.GetComponent<ParallaxCamera>();
  
             if (parallaxCamera != null)
-                parallaxCamera.onCameraTranslate += Move;
+            {
+                parallaxCamera.OnCameraTranslateX += MoveX;
+                parallaxCamera.OnCameraTranslateY += MoveY;
+            }
  
             SetLayers();
         }
@@ -36,11 +39,19 @@ namespace Bubble.Parallax
             }
         }
  
-        void Move(float delta)
+        void MoveX(float delta)
         {
             foreach (ParallaxLayer layer in parallaxLayers)
             {
-                layer.Move(delta);
+                layer.MoveX(delta);
+            }
+        }
+        
+        void MoveY(float delta)
+        {
+            foreach (ParallaxLayer layer in parallaxLayers)
+            {
+                layer.MoveY(delta);
             }
         }
     }

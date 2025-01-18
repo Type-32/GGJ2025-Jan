@@ -7,26 +7,40 @@ namespace Bubble.Parallax
     public class ParallaxCamera : MonoBehaviour
     {
         public delegate void ParallaxCameraDelegate(float deltaMovement);
-        public ParallaxCameraDelegate onCameraTranslate;
+        public ParallaxCameraDelegate OnCameraTranslateX;
+        public ParallaxCameraDelegate OnCameraTranslateY;
  
-        private float oldPosition;
+        private float _oldPosX;
+        private float _oldPosY;
  
         void Start()
         {
-            oldPosition = transform.position.x;
+            _oldPosX = transform.position.x;
+            _oldPosY = transform.position.y;
         }
  
         void Update()
         {
-            if (transform.position.x != oldPosition)
+            if (!Mathf.Approximately(transform.position.x, _oldPosX))
             {
-                if (onCameraTranslate != null)
+                if (OnCameraTranslateX != null)
                 {
-                    float delta = oldPosition - transform.position.x;
-                    onCameraTranslate(delta);
+                    float delta = _oldPosX - transform.position.x;
+                    OnCameraTranslateX(delta);
                 }
  
-                oldPosition = transform.position.x;
+                _oldPosX = transform.position.x;
+            }
+            
+            if (!Mathf.Approximately(transform.position.y, _oldPosY))
+            {
+                if (OnCameraTranslateY != null)
+                {
+                    float delta = _oldPosY - transform.position.y;
+                    OnCameraTranslateY(delta);
+                }
+ 
+                _oldPosY = transform.position.y;
             }
         }
     }
