@@ -4,23 +4,31 @@ using Random = UnityEngine.Random;
 
 namespace Bubble.NPC
 {
+    public enum BirdAnimationRotation
+    {
+        Left,
+        Right
+    }
     public class Birdie : MonoBehaviour
     {
         [NaughtyAttributes.MinMaxSlider(0.01f, 10f)]
         public Vector2 speedRange; // Speed of the NPC
         public float spawnOffset = 2f; // Offset to spawn outside the viewport
         public bool StopMoving = false;
+        public BirdAnimationRotation rotation = BirdAnimationRotation.Left;
 
         private Vector2 targetPosition; // Target position to fly towards
         private bool movingRight; // Direction of movement
         private Rigidbody2D rb; // Reference to the Rigidbody2D
 
         private float speed = 0f;
+        private SpriteRenderer renderer;
 
         void Start()
         {
             // Get the Rigidbody2D component
             rb = GetComponent<Rigidbody2D>();
+            renderer = GetComponent<SpriteRenderer>();
 
             // Randomly choose to move left or right
             movingRight = Random.Range(0, 2) == 0;
@@ -32,6 +40,11 @@ namespace Bubble.NPC
             SetTargetPosition();
             
             speed = Random.Range(speedRange.x, speedRange.y);
+
+            if ((movingRight && rotation == BirdAnimationRotation.Left) || (!movingRight && rotation == BirdAnimationRotation.Right))
+            {
+                renderer.flipX = true;
+            }
         }
 
         void FixedUpdate()
