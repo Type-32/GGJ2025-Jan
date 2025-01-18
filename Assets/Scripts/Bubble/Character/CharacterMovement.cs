@@ -14,6 +14,8 @@ namespace Bubble.Character
     {
         public FacetAPI RelayAPI { get; } = FacetAPI.Create()
             .Callback<Action>("onHookAttached")
+            .Callback<Action>("onPlayerDashed")
+            .Realtime<Action<bool>>("isGrappling")
             .Build();
         public new Rigidbody2D rigidbody;
         private bool isGrappling = false;
@@ -43,6 +45,10 @@ namespace Bubble.Character
         public float textureScrollSpeed = 1f; // Speed at which the texture scrolls along the line
         
         private CharacterInteractions _inter;
+
+        private Quaternion _targetRotation = Quaternion.identity;
+        private bool _stopInterpolating = false;
+        
         private void Start()
         {
             _inter = this.ScriptManager.GetScriptComponent<CharacterInteractions>();
@@ -89,9 +95,9 @@ namespace Bubble.Character
         private void MoveHook()
         {
             // Move the hook towards the target point
-            if (currentHook == null) return;
+            if (!currentHook) return;
             
-            if (hookRB == null)
+            if (!hookRB)
                 hookRB = currentHook.GetComponent<Rigidbody2D>();
             hookRB.linearVelocity = hookInitialDir * hookSpeed;
         }
@@ -154,6 +160,8 @@ namespace Bubble.Character
 
             isGrappling = false;
             isShootingHook = false;
+            
+            _targetRotation = Quaternion.identity;
         }
 
         public void OnDash()
@@ -167,6 +175,9 @@ namespace Bubble.Character
             // Apply a force proportional to the distance
             float forceMagnitude = Mathf.Clamp(distance * dashForce, 0, maxPullSpeed);
             rigidbody.AddForce(direction * forceMagnitude, ForceMode2D.Impulse);
+            
+            SetInterpolatingRotation(FacingTowardsRotation(transform.position, GetMousePosition()));
+            RelayAPI.Get<Action>("onPlayerDashed").Invoke();
         }
         
         private void UpdateLineRenderer()
@@ -185,22 +196,45 @@ namespace Bubble.Character
 
         private void Update()
         {
+            RelayAPI.Get<Action<bool>>("isGrappling").Invoke(isGrappling);
+            
             if (isGrappling)
             {
                 UpdateLineRenderer();
+                if (currentHook)
+                    _targetRotation = FacingTowardsRotation(transform.position, currentHook.transform.position);
+                
             }
             
             // Move the hook if it's shooting
-            if (isShootingHook && currentHook != null)
+            if (isShootingHook && currentHook)
             {
                 MoveHook();
             }
+            
+            transform.rotation = Quaternion.Lerp(transform.rotation, _targetRotation, Time.deltaTime * 5);
         }
 
         private void OnHookNullify()
         {
             currentHook = null;
             ReleaseGrapple();
+        }
+
+        private void SetInterpolatingRotation(Quaternion rot)
+        {
+            _stopInterpolating = true;
+            transform.rotation = rot;
+            _stopInterpolating = false;
+        }
+
+        private Quaternion FacingTowardsRotation(Vector2 origin, Vector2 target, float angleOffset = 0)
+        {
+            Vector2 directionToHook = (target - origin).normalized;
+
+            // Calculate the target rotation to face the hook
+            float angle = Mathf.Atan2(directionToHook.y, directionToHook.x) * Mathf.Rad2Deg;
+            return Quaternion.Euler(0, 0, angle + angleOffset); // Adjust for sprite orientation
         }
     }
 }

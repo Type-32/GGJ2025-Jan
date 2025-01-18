@@ -13,14 +13,39 @@ namespace Bubble.Character
 
         [Header("Camera Shake Controls"), SerializeField]
         private ShakeData wasteShieldShakeData;
-
         [SerializeField] private ShakeData grappleSuccessShakeData;
+        [SerializeField] private ShakeData dashShakeData;
+        
+        [SerializeField] private ParticleSystem dashEffect;
+        [SerializeField] private GameObject shield;
         private CharacterMovement _movement;
+        private CharacterInteractions _interactions;
+        private CharacterManager manager;
+        
+        [NaughtyAttributes.Button("Add Shield")]
+        public void AddShield()
+        {
+            shields++;
+        }
 
         protected void Start()
         {
+            manager = GetComponent<CharacterManager>();
             _movement = this.ScriptManager.GetScriptComponent<CharacterMovement>();
-            _movement.RelayAPI.Get<Action>("onHookAttached").Subscribe(TryGrappleShake);
+            _interactions = this.ScriptManager.GetScriptComponent<CharacterInteractions>();
+            _movement.RelayAPI.Get<Action>("onHookAttached").Subscribe(() =>
+            {
+                if (grappleSuccessShakeData != null)
+                    CameraShakerHandler.Shake(grappleSuccessShakeData);
+                AudioManager.Instance.PlayAudio("HookHit");
+            });
+            _movement.RelayAPI.Get<Action>("onPlayerDashed").Subscribe(() =>
+            {
+                if (dashEffect != null)
+                    dashEffect.Play();
+                if (dashShakeData != null)
+                    CameraShakerHandler.Shake(dashShakeData);
+            });
         }
 
         private void OnCollisionEnter2D(Collision2D other)
@@ -36,7 +61,13 @@ namespace Bubble.Character
             if (shields <= 0)
             {
                 // TODO: add game over code
-                Destroy(this.gameObject);
+                manager.CharAPI.Get<Action>("onDeath").Invoke();
+                _interactions.DisableControls();
+                Destroy(this.gameObject, 2f);
+                Rigidbody2D rb = GetComponent<Rigidbody2D>();
+                Collider2D collider = GetComponent<Collider2D>();
+                collider.enabled = false;
+                rb.bodyType = RigidbodyType2D.Static;
             }
             else
             {
@@ -46,11 +77,9 @@ namespace Bubble.Character
             }
         }
 
-        public void TryGrappleShake()
+        protected void FixedUpdate()
         {
-            if (grappleSuccessShakeData != null)
-                CameraShakerHandler.Shake(grappleSuccessShakeData);
-            AudioManager.Instance.PlayAudio("HookHit");
+            shield.gameObject.SetActive(shields > 0);
         }
     }
 }

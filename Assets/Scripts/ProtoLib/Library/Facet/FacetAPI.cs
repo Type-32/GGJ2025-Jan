@@ -175,10 +175,10 @@ namespace ProtoLib.Library.Facet
             private Dictionary<string, (Type type, object callback)> callbacks = new();
 
             /// <summary>
-            // /// Adds a regular callback.
-            // /// </summary>
-            // /// <typeparam name="TDelegate">The delegate type for the callback.</typeparam>
-            // /// <param name="name">The name of the callback.</param>
+            /// Adds a regular callback.
+            /// </summary>
+            /// <typeparam name="TDelegate">The delegate type for the callback.</typeparam>
+            /// <param name="name">The name of the callback.</param>
             public FacetBuilder Callback<TDelegate>(string name) where TDelegate : Delegate
             {
                 callbacks[name] = (typeof(TDelegate), new FacetCallback<TDelegate>(reactive: false));
@@ -186,10 +186,10 @@ namespace ProtoLib.Library.Facet
             }
 
             /// <summary>
-            // /// Adds a realtime callback that updates frequently.
-            // /// </summary>
-            // /// <typeparam name="TDelegate">The delegate type for the callback.</typeparam>
-            // /// <param name="name">The name of the callback.</param>
+            /// Adds a realtime callback that updates frequently.
+            /// </summary>
+            /// <typeparam name="TDelegate">The delegate type for the callback.</typeparam>
+            /// <param name="name">The name of the callback.</param>
             public FacetBuilder Realtime<TDelegate>(string name) where TDelegate : Delegate
             {
                 callbacks[name] = (typeof(TDelegate), new FacetCallback<TDelegate>(reactive: true));
