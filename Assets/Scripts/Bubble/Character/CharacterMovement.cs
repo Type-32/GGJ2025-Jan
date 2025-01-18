@@ -184,6 +184,7 @@ namespace Bubble.Character
             
             SetInterpolatingRotation(FacingTowardsRotation(transform.position, GetMousePosition()));
             RelayAPI.Get<Action>("onPlayerDashed").Invoke();
+            cooling = 0;
         }
         
         private void UpdateLineRenderer()
