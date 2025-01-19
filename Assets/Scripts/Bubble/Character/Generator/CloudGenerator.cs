@@ -1,94 +1,206 @@
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Bubble.Character.Generator
 {
-    using UnityEngine;
-
     public class CloudGenerator : MonoBehaviour
     {
         public GameObject[] cloudPrefabs; // Array of cloud prefabs
         public Transform player; // Reference to the player's transform
-        public float spawnRadius = 10f; // Radius around the player where clouds can spawn
+        public float bottomConeSize = 10f; // Cone size at the bottom
+        public float topConeSize = 20f; // Cone size at the top
         public float minSpawnDistance = 5f; // Minimum distance from the player to spawn clouds
-        public float spawnRate = 1f; // Base rate of cloud generation (clouds per second)
-        public AnimationCurve spawnRateOverHeight; // Curve to control spawn rate over height
-        public AnimationCurve cloudSizeOverHeight; // Curve to control cloud size over height
         public float maxCloudSize = 2f; // Maximum size of clouds
+        public float coneAngle = 45f; // Angle of the cone in degrees
+        public int cloudNumber = 50; // Total number of clouds to generate
+        public int maxHeight = 100; // Maximum height for cloud generation
+        public float baseHeightOffset = 5f; // Height offset above the player's starting position
+        public float minCloudSpacing = 2f; // Minimum distance between clouds to prevent overlap
 
-        private float nextSpawnTime;
-        private float lastPlayerY; // Store the player's Y position from the last frame
+        private Vector2 initialPlayerPosition; // Player's initial position
+        private List<GameObject> cache = new(); // Cache for generated clouds
+        private List<Vector2> cloudPositions = new(); // Track cloud positions to prevent overlap
 
         void Start()
         {
-            nextSpawnTime = Time.time + 1f / spawnRate;
-            lastPlayerY = player.position.y; // Initialize the player's Y position
+            initialPlayerPosition = new Vector2(player.position.x, player.position.y + baseHeightOffset); // Store the player's initial position with offset
+
+            // Generate clouds all at once
+            GenerateClouds(cloudNumber, maxHeight);
         }
 
-        void Update()
+        [NaughtyAttributes.Button]
+        public void PreviewGenerate()
         {
-            // Check if the player is moving upwards
-            if (player.position.y > lastPlayerY)
+            initialPlayerPosition = new Vector2(player.position.x, player.position.y + baseHeightOffset); // Store the player's initial position with offset
+
+            GenerateClouds(cloudNumber, maxHeight);
+        }
+
+        [NaughtyAttributes.Button]
+        public void Clear()
+        {
+            cache.ForEach(obj =>
             {
-                // Check if it's time to spawn a new cloud
-                if (Time.time >= nextSpawnTime)
-                {
-                    SpawnCloud();
-                    nextSpawnTime = Time.time + 1f / GetSpawnRate();
-                }
-            }
-
-            // Update the player's Y position for the next frame
-            lastPlayerY = player.position.y;
+                DestroyImmediate(obj);
+            });
+            cache.Clear();
+            cloudPositions.Clear();
         }
 
-        void SpawnCloud()
+        public void GenerateClouds(int numClouds, float maxHeight)
         {
-            // Get a random position outside the camera's view, biased upwards
-            Vector2 spawnPosition = GetRandomSpawnPosition();
+            // Ensure at least two clouds are in the player's initial view
+            SpawnInitialViewClouds();
 
-            // Choose a random cloud prefab
-            GameObject cloudPrefab = cloudPrefabs[Random.Range(0, cloudPrefabs.Length)];
+            // Generate the remaining clouds
+            for (int i = 0; i < numClouds - 2; i++)
+            {
+                // Get a random position within the cone-shaped area and height range
+                Vector2 spawnPosition = GetValidSpawnPosition(maxHeight);
 
-            // Instantiate the cloud
-            GameObject cloud = Instantiate(cloudPrefab, spawnPosition, Quaternion.identity);
+                // If no valid position is found, skip this cloud
+                if (spawnPosition == Vector2.zero)
+                    continue;
 
-            // Scale the cloud based on height
-            float height = spawnPosition.y;
-            float sizeMultiplier = cloudSizeOverHeight.Evaluate(height);
-            cloud.transform.localScale = Vector3.one * Mathf.Clamp(sizeMultiplier, 0.1f, maxCloudSize);
+                // Choose a random cloud prefab
+                GameObject cloudPrefab = cloudPrefabs[Random.Range(0, cloudPrefabs.Length)];
+
+                // Instantiate the cloud
+                GameObject cloud = Instantiate(cloudPrefab, spawnPosition, Quaternion.identity);
+
+                // Scale the cloud based on height
+                float height = spawnPosition.y - initialPlayerPosition.y;
+                float sizeMultiplier = Mathf.Clamp01(1 - (height / maxHeight)); // Smaller as height increases
+                float cloudSize = Mathf.Lerp(0.1f, maxCloudSize, sizeMultiplier); // Scale size based on height
+                cloud.transform.localScale = Vector3.one * cloudSize;
+
+                // Add the cloud to the cache and track its position
+                cache.Add(cloud);
+                cloudPositions.Add(spawnPosition);
+            }
         }
 
-        Vector2 GetRandomSpawnPosition()
+        void SpawnInitialViewClouds()
+        {
+            // Spawn two clouds within the player's initial view
+            for (int i = 0; i < 2; i++)
+            {
+                // Get a random position within the player's initial view
+                Vector2 spawnPosition = GetInitialViewSpawnPosition();
+
+                // Choose a random cloud prefab
+                GameObject cloudPrefab = cloudPrefabs[Random.Range(0, cloudPrefabs.Length)];
+
+                // Instantiate the cloud
+                GameObject cloud = Instantiate(cloudPrefab, spawnPosition, Quaternion.identity);
+
+                // Scale the cloud (medium size for initial view)
+                float cloudSize = Random.Range(0.5f, maxCloudSize);
+                cloud.transform.localScale = Vector3.one * cloudSize;
+
+                // Add the cloud to the cache and track its position
+                cache.Add(cloud);
+                cloudPositions.Add(spawnPosition);
+            }
+        }
+
+        Vector2 GetInitialViewSpawnPosition()
         {
             // Get the camera's viewport bounds in world coordinates
             Vector2 viewportMin = Camera.main.ViewportToWorldPoint(new Vector2(0, 0));
             Vector2 viewportMax = Camera.main.ViewportToWorldPoint(new Vector2(1, 1));
 
-            // Calculate a random position outside the camera's view, biased upwards
-            float randomX = Random.Range(viewportMin.x - spawnRadius, viewportMax.x + spawnRadius);
-            float randomY = player.position.y + Random.Range(minSpawnDistance, spawnRadius);
+            // Calculate a random position within the player's initial view
+            float randomX = Random.Range(viewportMin.x, viewportMax.x);
+            float randomY = Random.Range(viewportMin.y, viewportMax.y);
 
-            // Ensure the cloud spawns outside the camera's view
-            if (randomX > viewportMin.x && randomX < viewportMax.x)
-            {
-                randomX = Random.value > 0.5f ? viewportMax.x + spawnRadius : viewportMin.x - spawnRadius;
-            }
+            // Ensure the cloud is above the player's starting position
+            randomY = Mathf.Max(randomY, initialPlayerPosition.y);
 
             return new Vector2(randomX, randomY);
         }
 
-        float GetSpawnRate()
+        Vector2 GetValidSpawnPosition(float maxHeight)
         {
-            // Adjust spawn rate based on player height
-            float height = player.position.y;
-            return spawnRate * spawnRateOverHeight.Evaluate(height);
+            int maxAttempts = 100; // Maximum attempts to find a valid position
+            for (int i = 0; i < maxAttempts; i++)
+            {
+                // Calculate a random angle within the cone
+                float randomAngle = Random.Range(-coneAngle / 2f, coneAngle / 2f);
+
+                // Convert the angle to a direction vector
+                Vector2 spawnDirection = (Vector2)(Quaternion.Euler(0, 0, randomAngle) * Vector3.up);
+
+                // Calculate the spawn height and interpolate the cone size
+                float spawnHeight = Random.Range(0f, maxHeight);
+                float coneSize = Mathf.Lerp(bottomConeSize, topConeSize, spawnHeight / maxHeight);
+
+                // Calculate the spawn position within the cone and height range
+                float spawnDistance = Random.Range(minSpawnDistance, coneSize);
+                Vector2 spawnPosition = initialPlayerPosition + spawnDirection * spawnDistance + Vector2.up * spawnHeight;
+
+                // Ensure the cloud is above the player's starting position
+                if (spawnPosition.y < initialPlayerPosition.y)
+                    continue;
+
+                // Check if the spawn position is valid (no overlaps and not too close to the player)
+                if (IsPositionValid(spawnPosition))
+                {
+                    return spawnPosition;
+                }
+            }
+
+            // If no valid position is found after max attempts, return Vector2.zero
+            return Vector2.zero;
         }
 
-        private void OnDrawGizmos()
+        bool IsPositionValid(Vector2 position)
         {
-            Gizmos.DrawWireSphere(transform.position, spawnRadius);
-            Gizmos.DrawWireSphere(transform.position, minSpawnDistance);
+            // Check if the position is too close to any existing cloud
+            foreach (Vector2 cloudPos in cloudPositions)
+            {
+                if (Vector2.Distance(position, cloudPos) < minCloudSpacing)
+                {
+                    return false; // Position is too close to another cloud
+                }
+            }
+
+            // Check if the position is too close to the player
+            if (Vector2.Distance(position, initialPlayerPosition) < minSpawnDistance)
+            {
+                return false; // Position is too close to the player
+            }
+
+            return true; // Position is valid
+        }
+
+        void OnDrawGizmosSelected()
+        {
+            // Draw the cone-shaped spawn area in the editor
+            if (player != null)
+            {
+                Gizmos.color = Color.cyan;
+
+                // Draw the bottom cone boundaries
+                Vector2 bottomConeLeft = (Vector2)(Quaternion.Euler(0, 0, -coneAngle / 2f) * Vector3.up) * bottomConeSize;
+                Vector2 bottomConeRight = (Vector2)(Quaternion.Euler(0, 0, coneAngle / 2f) * Vector3.up) * bottomConeSize;
+
+                Gizmos.DrawLine(initialPlayerPosition, initialPlayerPosition + bottomConeLeft);
+                Gizmos.DrawLine(initialPlayerPosition, initialPlayerPosition + bottomConeRight);
+
+                // Draw the top cone boundaries
+                Vector2 topConeLeft = (Vector2)(Quaternion.Euler(0, 0, -coneAngle / 2f) * Vector3.up) * topConeSize;
+                Vector2 topConeRight = (Vector2)(Quaternion.Euler(0, 0, coneAngle / 2f) * Vector3.up) * topConeSize;
+
+                Vector2 topPosition = initialPlayerPosition + Vector2.up * maxHeight;
+                Gizmos.DrawLine(topPosition, topPosition + topConeLeft);
+                Gizmos.DrawLine(topPosition, topPosition + topConeRight);
+
+                // Draw the sides of the cone
+                Gizmos.DrawLine(initialPlayerPosition + bottomConeLeft, topPosition + topConeLeft);
+                Gizmos.DrawLine(initialPlayerPosition + bottomConeRight, topPosition + topConeRight);
+            }
         }
     }
 }
