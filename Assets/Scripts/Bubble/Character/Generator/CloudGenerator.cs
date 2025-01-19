@@ -10,12 +10,14 @@ namespace Bubble.Character.Generator
         public float bottomConeSize = 10f; // Cone size at the bottom
         public float topConeSize = 20f; // Cone size at the top
         public float minSpawnDistance = 5f; // Minimum distance from the player to spawn clouds
+        public float minCloudSize = 1f; // Minimum size of clouds
         public float maxCloudSize = 2f; // Maximum size of clouds
         public float coneAngle = 45f; // Angle of the cone in degrees
         public int cloudNumber = 50; // Total number of clouds to generate
         public int maxHeight = 100; // Maximum height for cloud generation
         public float baseHeightOffset = 5f; // Height offset above the player's starting position
-        public float minCloudSpacing = 2f; // Minimum distance between clouds to prevent overlap
+        public float minCloudDistance = 3f; // Minimum distance between clouds
+        public float maxCloudDistance = 10f; // Maximum distance between clouds
 
         private Vector2 initialPlayerPosition; // Player's initial position
         private List<GameObject> cache = new(); // Cache for generated clouds
@@ -61,7 +63,10 @@ namespace Bubble.Character.Generator
 
                 // If no valid position is found, skip this cloud
                 if (spawnPosition == Vector2.zero)
+                {
+                    Debug.LogWarning($"Failed to find a valid position for cloud {i + 1}");
                     continue;
+                }
 
                 // Choose a random cloud prefab
                 GameObject cloudPrefab = cloudPrefabs[Random.Range(0, cloudPrefabs.Length)];
@@ -72,7 +77,7 @@ namespace Bubble.Character.Generator
                 // Scale the cloud based on height
                 float height = spawnPosition.y - initialPlayerPosition.y;
                 float sizeMultiplier = Mathf.Clamp01(1 - (height / maxHeight)); // Smaller as height increases
-                float cloudSize = Mathf.Lerp(0.1f, maxCloudSize, sizeMultiplier); // Scale size based on height
+                float cloudSize = Mathf.Lerp(minCloudSize, maxCloudSize, sizeMultiplier); // Scale size based on height
                 cloud.transform.localScale = Vector3.one * cloudSize;
 
                 // Add the cloud to the cache and track its position
@@ -96,7 +101,7 @@ namespace Bubble.Character.Generator
                 GameObject cloud = Instantiate(cloudPrefab, spawnPosition, Quaternion.identity);
 
                 // Scale the cloud (medium size for initial view)
-                float cloudSize = Random.Range(0.5f, maxCloudSize);
+                float cloudSize = Random.Range(minCloudSize, maxCloudSize);
                 cloud.transform.localScale = Vector3.one * cloudSize;
 
                 // Add the cloud to the cache and track its position
@@ -123,7 +128,7 @@ namespace Bubble.Character.Generator
 
         Vector2 GetValidSpawnPosition(float maxHeight)
         {
-            int maxAttempts = 100; // Maximum attempts to find a valid position
+            int maxAttempts = 1000; // Increased maximum attempts to find a valid position
             for (int i = 0; i < maxAttempts; i++)
             {
                 // Calculate a random angle within the cone
@@ -152,6 +157,7 @@ namespace Bubble.Character.Generator
             }
 
             // If no valid position is found after max attempts, return Vector2.zero
+            Debug.LogWarning("Failed to find a valid spawn position after maximum attempts.");
             return Vector2.zero;
         }
 
@@ -160,7 +166,10 @@ namespace Bubble.Character.Generator
             // Check if the position is too close to any existing cloud
             foreach (Vector2 cloudPos in cloudPositions)
             {
-                if (Vector2.Distance(position, cloudPos) < minCloudSpacing)
+                float distance = Vector2.Distance(position, cloudPos);
+
+                // Ensure the distance is within the min and max range
+                if (distance < minCloudDistance)
                 {
                     return false; // Position is too close to another cloud
                 }

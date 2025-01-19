@@ -24,6 +24,8 @@ public class HUD : MonoBehaviour
     private float ticksPassed = 0f;
     private int seconds = 0;
 
+    private int maxHeightReached = 0;
+
     private bool gameEnd = false;
     
     void Start()
@@ -55,6 +57,8 @@ public class HUD : MonoBehaviour
             seconds++;
             SetTimerNumber(seconds);
         }
+
+        maxHeightReached = (int)Math.Max(maxHeightReached, manager.transform.position.y);
     }
 
     public void SetShieldBarNumber(int number)
@@ -90,7 +94,7 @@ public class HUD : MonoBehaviour
         gameEnd = true;
         hud.SetActive(false);
         gui.SetActive(true);
-        resultTimeText.text = $"You have survived: {SecondsToMinutes(seconds)}";
+        resultTimeText.text = $"You have survived: {SecondsToMinutes(seconds)}\nMaximum Height Reached: {maxHeightReached}m";
     }
 
     public string SecondsToMinutes(int sec)

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1041114338781664967}
   m_Layer: 0
   m_Name: IrregularCloud (1)
-  m_TagString: Untagged
+  m_TagString: CharacterReaction/OnTouchTryDestroy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
