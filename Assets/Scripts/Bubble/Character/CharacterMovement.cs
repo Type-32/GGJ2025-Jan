@@ -1,4 +1,5 @@
 using System;
+using Bubble.Audio;
 using Bubble.Character.Interface;
 using Bubble.Misc;
 using JetBrains.Annotations;
@@ -22,6 +23,7 @@ namespace Bubble.Character
         private bool isShootingHook = false;
         private SpringJoint2D springJoint;
         [SerializeField] private float dashCooldown = 3f;
+        [SerializeField] private int hookMaxReach = 30;
 
         [Header("Grapple Settings")]
         public float springFrequency = 1f; // Controls the speed of the pull
@@ -93,6 +95,7 @@ namespace Bubble.Character
             hookInitialDir = (grappleTargetPoint - (Vector2)currentHook.transform.position).normalized;
             currentHook.API.Get<Action>("onHookHit").Subscribe(AttachGrapple);
             currentHook.API.Get<Action>("onHookNullify").Subscribe(OnHookNullify);
+            currentHook.transform.rotation = FacingTowardsRotation(currentHook.transform.position, GetMousePosition(), -90);
             isShootingHook = true;
         }
 
@@ -145,6 +148,7 @@ namespace Bubble.Character
 
         public void ReleaseGrapple()
         {
+            lineRenderer.enabled = false;
             // Destroy the SpringJoint2D component
             if (springJoint != null)
             {
@@ -154,6 +158,8 @@ namespace Bubble.Character
             // Disable the LineRenderer
             if (lineRenderer != null)
             {
+                lineRenderer.SetPosition(0, Vector3.zero); // Start at the player's position
+                lineRenderer.SetPosition(1, Vector3.zero); // End at the hook's position
                 lineRenderer.enabled = false;
             }
             
@@ -161,6 +167,7 @@ namespace Bubble.Character
             if (currentHook != null)
             {
                 Destroy(currentHook.gameObject);
+                currentHook = null;
             }
 
             isGrappling = false;
@@ -195,7 +202,7 @@ namespace Bubble.Character
         
         private void UpdateLineRenderer()
         {
-            if (lineRenderer != null)
+            if (lineRenderer && currentHook && rigidbody)
             {
                 // Update the positions of the LineRenderer
                 lineRenderer.SetPosition(0, rigidbody.position); // Start at the player's position
@@ -205,24 +212,33 @@ namespace Bubble.Character
                 float offset = Time.time * textureScrollSpeed;
                 lineRenderer.material.mainTextureOffset = new Vector2(offset, 0);
             }
+
+            // lineRenderer.enabled = !!currentHook;
+            // Debug.Log(!!currentHook);
         }
 
         private void Update()
         {
             RelayAPI.Get<Action<bool>>("isGrappling").Invoke(isGrappling);
-            
-            if (isGrappling)
+            UpdateLineRenderer();
+
+            if (currentHook is not null)
             {
-                UpdateLineRenderer();
-                if (currentHook)
-                    _targetRotation = FacingTowardsRotation(transform.position, currentHook.transform.position);
+                lineRenderer.enabled = true;
                 
-            }
-            
-            // Move the hook if it's shooting
-            if (isShootingHook && currentHook)
-            {
-                MoveHook();
+
+                if (Vector2.Distance(ConversionHelper.Vec3ToVec2(currentHook.transform.position),
+                        ConversionHelper.Vec3ToVec2(transform.position)) > hookMaxReach)
+                {
+                    // Destroy(currentHook.gameObject);
+                    OnHookNullify();
+                    AudioManager.Instance.PlayAudio("OutOfRange");
+                }
+                
+                if(isShootingHook)
+                    MoveHook();
+                if(isGrappling)
+                    _targetRotation = FacingTowardsRotation(transform.position, currentHook.transform.position);
             }
             
             transform.rotation = Quaternion.Lerp(transform.rotation, _targetRotation, Time.deltaTime * 5);
@@ -241,6 +257,7 @@ namespace Bubble.Character
         private void OnHookNullify()
         {
             currentHook = null;
+            hookRB = null;
             ReleaseGrapple();
         }
 

@@ -1,4 +1,5 @@
 using System;
+using Bubble.Audio;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -99,6 +100,10 @@ namespace Bubble.NPC
 
         private void OnCollisionEnter2D(Collision2D other)
         {
+            if (other.gameObject.layer == LayerMask.NameToLayer("Game/Hook"))
+            {
+                AudioManager.Instance.PlayAudio("HitBird");
+            }
             if(other.gameObject.layer == LayerMask.NameToLayer("Game/Hook") || other.gameObject.layer == LayerMask.NameToLayer("Game/Character"))
             {
                 StopMoving = true;

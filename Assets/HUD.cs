@@ -7,6 +7,9 @@ using UnityEngine.UI;
 public class HUD : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
+    [SerializeField] private GameObject hud, gui;
+    [SerializeField] private Text resultTimeText;
+    
     [SerializeField] private List<Sprite> numbers = new();
     [SerializeField] private List<Image> digits = new();
     [SerializeField] private List<Sprite> shieldBar = new();
@@ -20,10 +23,15 @@ public class HUD : MonoBehaviour
 
     private float ticksPassed = 0f;
     private int seconds = 0;
+
+    private bool gameEnd = false;
+    
     void Start()
     {
+        hud.SetActive(true);
+        gui.SetActive(false);
         manager = FindFirstObjectByType<CharacterManager>();
-        manager.CharAPI.Get<Action>("onDeath");
+        manager.CharAPI.Get<Action>("onDeath").Subscribe(OnDeath);
         manager.CharAPI.Get<Action<int>>("attributeShields").Subscribe(handler =>
         {
             SetShieldBarNumber(handler);
@@ -39,6 +47,7 @@ public class HUD : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (gameEnd) return;
         ticksPassed += Time.fixedDeltaTime;
         if (ticksPassed >= 1f)
         {
@@ -74,5 +83,20 @@ public class HUD : MonoBehaviour
         digits[1].sprite = numbers[minuteOnes];
         digits[2].sprite = numbers[secondTens];
         digits[3].sprite = numbers[secondOnes];
+    }
+
+    public void OnDeath()
+    {
+        gameEnd = true;
+        hud.SetActive(false);
+        gui.SetActive(true);
+        resultTimeText.text = $"You have survived: {SecondsToMinutes(seconds)}";
+    }
+
+    public string SecondsToMinutes(int sec)
+    {
+        int minutes = sec / 60;
+        int remainingSeconds = sec % 60;
+        return $"{minutes} minutes {remainingSeconds:00} seconds";
     }
 }
