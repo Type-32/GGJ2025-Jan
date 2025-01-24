@@ -1,4 +1,4 @@
-# GGJ 2025 January - "Bubble"
+# GGJ 2025 January - "Bubble's Horizon"
 
 **You are currently on: Production (main) Branch**
 
